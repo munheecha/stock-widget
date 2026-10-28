@@ -2,83 +2,86 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>실시간 주식 위젯</title>
 
 <style>
 body{
-background:#111827;
-font-family:sans-serif;
-color:white;
-padding:20px;
-margin:0;
+    background:#111827;
+    color:white;
+    font-family:sans-serif;
+    margin:0;
+    padding:20px;
 }
 
 h1{
-text-align:center;
-}
-
-.card{
-background:#1f2937;
-padding:15px;
-border-radius:15px;
-margin-bottom:12px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-.name{
-font-size:20px;
-font-weight:bold;
-}
-
-.price{
-font-size:18px;
-margin-top:5px;
-color:#22c55e;
-}
-
-.time{
-font-size:12px;
-opacity:0.7;
-margin-top:3px;
-}
-
-button{
-background:#ef4444;
-border:none;
-color:white;
-padding:8px 12px;
-border-radius:8px;
-cursor:pointer;
-}
-
-.add-area{
-display:flex;
-gap:10px;
-margin-top:20px;
-}
-
-input{
-flex:1;
-padding:10px;
-border:none;
-border-radius:8px;
-}
-
-.add-btn{
-background:#2563eb;
+    text-align:center;
 }
 
 .refresh{
-text-align:center;
-margin-bottom:20px;
-opacity:0.8;
+    text-align:center;
+    opacity:0.8;
+    margin-bottom:20px;
+}
+
+.card{
+    background:#1f2937;
+    border-radius:15px;
+    padding:15px;
+    margin-bottom:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.name{
+    font-size:20px;
+    font-weight:bold;
+}
+
+.price{
+    font-size:18px;
+    color:#22c55e;
+    margin-top:5px;
+}
+
+.time{
+    font-size:12px;
+    opacity:0.7;
+}
+
+button{
+    border:none;
+    border-radius:8px;
+    padding:8px 12px;
+    cursor:pointer;
+}
+
+.delete-btn{
+    background:#ef4444;
+    color:white;
+}
+
+.add-area{
+    display:flex;
+    gap:10px;
+    margin-top:20px;
+}
+
+.add-btn{
+    background:#2563eb;
+    color:white;
+}
+
+input{
+    flex:1;
+    padding:10px;
+    border:none;
+    border-radius:8px;
 }
 </style>
-</head>
 
+</head>
 <body>
 
 <h1>📈 실시간 주식 위젯</h1>
@@ -90,159 +93,69 @@ opacity:0.8;
 <div id="stocks"></div>
 
 <div class="add-area">
-<input id="newStock" placeholder="종목명 입력">
-<button class="add-btn" onclick="addStock()">추가</button>
+    <input id="newStock" placeholder="종목명 입력">
+    <button class="add-btn" onclick="addStock()">추가</button>
 </div>
 
 <script>
 
 const stockMap = {
-"삼성전자":"005930.KS",
-"KODEX 미국나스닥100":"379810.KS",
-"일진전기":"103590.KS"
-const API_KEY ="dbgm29hr01qj6jgour30dbgm29hr01qj6jgour3g";
+    "삼성전자":"005930.KS",
+    "KODEX 미국나스닥100":"379810.KS",
+    "일진전기":"103590.KS"
 };
 
 let stocks =
-JSON.parse(localStorage.getItem("stocks"))
-||
+JSON.parse(localStorage.getItem("stocks")) ||
 [
-"삼성전자",
-"KODEX 미국나스닥100",
-"일진전기"
+    "삼성전자",
+    "KODEX 미국나스닥100",
+    "일진전기"
 ];
 
 function saveStocks(){
-
-localStorage.setItem(
-"stocks",
-JSON.stringify(stocks)
-);
-
+    localStorage.setItem(
+        "stocks",
+        JSON.stringify(stocks)
+    );
 }
 
 async function getPrice(symbol){
 
-  try{
+    try{
 
-    const res = await fetch(
-      `https://stock-api.royental9.workers.dev/?symbol=${symbol}`
-    );
+        const res = await fetch(
+            `https://stock-api.royental9.workers.dev/?symbol=${symbol}`
+        );
 
-    const data = await res.json();
+        const data = await res.json();
 
-    return data.price;
+        return data.price || "조회중";
 
-  }catch(err){
+    }catch(error){
 
-    return "조회 실패";
+        return "조회 실패";
 
-  }
-
-}
-
-}
+    }
 
 }
 
 async function render(){
 
-const area =
-document.getElementById("stocks");
+    const area =
+    document.getElementById("stocks");
 
-area.innerHTML="";
+    area.innerHTML = "";
 
-for(const stock of stocks){
+    for(const stock of stocks){
 
-const symbol =
-stockMap[stock];
+        const symbol =
+        stockMap[stock];
 
-let priceText =
-"종목코드 없음";
+        let priceText =
+        "종목코드 없음";
 
-if(symbol){
+        if(symbol){
 
-const price =
-await getPrice(symbol);
-
-priceText =
-typeof price === "number"
-?
-price.toLocaleString()
-:
-price;
-
-}
-
-area.innerHTML += `
-
-<div class="card">
-
-<div>
-
-<div class="name">${stock}</div>
-
-<div class="price">
-${priceText}
-</div>
-
-<div class="time">
-${new Date().toLocaleTimeString()}
-</div>
-
-</div>
-
-<button onclick="removeStock('${stock}')">
-삭제
-</button>
-
-</div>
-
-`;
-
-}
-
-saveStocks();
-
-}
-
-function addStock(){
-
-const input =
-document.getElementById("newStock");
-
-const value =
-input.value.trim();
-
-if(!value) return;
-
-stocks.push(value);
-
-input.value="";
-
-render();
-
-}
-
-function removeStock(name){
-
-stocks =
-stocks.filter(
-s => s !== name
-);
-
-render();
-
-}
-
-render();
-
-setInterval(
-render,
-60000
-);
-
-</script>
-
-</body>
-</html>
+            priceText =
+            await getPrice
