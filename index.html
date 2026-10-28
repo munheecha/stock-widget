@@ -1,74 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주식 위젯</title>
+
+<style>
+
+body{
+  font-family:sans-serif;
+  background:#111827;
+  color:white;
+  padding:20px;
+}
+
+.card{
+  background:#1f2937;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+
+.price{
+  color:#22c55e;
+  font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>📈 주식 위젯</h1>
+
+<div id="stocks">
+로딩중...
+</div>
+
 <script>
 
-const stockMap = {
-    "삼성전자":"005930.KS",
-    "KODEX 미국나스닥100":"379810.KS",
-    "일진전기":"103590.KS"
-};
+async function loadData(){
 
-let stocks = [
-    "삼성전자",
-    "KODEX 미국나스닥100",
-    "일진전기"
-];
+  try{
 
-async function getPrice(symbol){
+    const res =
+    await fetch(
+      "https://stock-api.royental9.workers.dev/?symbol=005930.KS"
+    );
 
-    try{
+    const data =
+    await res.json();
 
-        const res = await fetch(
-            "https://stock-api.royental9.workers.dev/?symbol=" + symbol
-        );
+    document.getElementById("stocks").innerHTML =
 
-        const data = await res.json();
+    `
+    <div class="card">
+      <h3>삼성전자</h3>
+      <div class="price">
+        ${data.price}
+      </div>
+    </div>
+    `;
 
-        return data.price;
+  }catch(error){
 
-    }catch(error){
+    document.getElementById("stocks").innerHTML =
+    "오류 발생";
 
-        return "조회 실패";
-
-    }
-
-}
-
-async function render(){
-
-    const area =
-    document.getElementById("stocks");
-
-    area.innerHTML = "";
-
-    for(const stock of stocks){
-
-        const symbol =
-        stockMap[stock];
-
-        const price =
-        await getPrice(symbol);
-
-        area.innerHTML +=
-        `
-        <div class="card">
-
-            <div>
-
-                <div class="name">
-                    ${stock}
-                </div>
-
-                <div class="price">
-                    ${price}
-                </div>
-
-            </div>
-
-        </div>
-        `;
-    }
+  }
 
 }
 
-render();
+loadData();
 
 </script>
+
+</body>
+</html>
