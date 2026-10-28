@@ -123,23 +123,23 @@ JSON.stringify(stocks)
 
 async function getPrice(symbol){
 
-try{
+  try{
 
-const url =
-`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`;
+    const res = await fetch(
+      `https://stock-api.royental9.workers.dev/?symbol=${symbol}`
+    );
 
-const res = await fetch(url);
+    const data = await res.json();
 
-const data = await res.json();
+    return data.price;
 
-const price =
-data.chart.result[0].meta.regularMarketPrice;
+  }catch(err){
 
-return price;
+    return "조회 실패";
 
-}catch(err){
+  }
 
-return "조회 실패";
+}
 
 }
 
