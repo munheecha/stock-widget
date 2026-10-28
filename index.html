@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>나의 주식 위젯</title>
+<title>실시간 주식 위젯</title>
 
 <style>
 body{
-margin:0;
 background:#111827;
-color:white;
 font-family:sans-serif;
+color:white;
 padding:20px;
+margin:0;
 }
 
 h1{
@@ -29,20 +29,32 @@ align-items:center;
 }
 
 .name{
-font-size:18px;
+font-size:20px;
 font-weight:bold;
+}
+
+.price{
+font-size:18px;
+margin-top:5px;
+color:#22c55e;
+}
+
+.time{
+font-size:12px;
+opacity:0.7;
+margin-top:3px;
 }
 
 button{
 background:#ef4444;
-color:white;
 border:none;
+color:white;
+padding:8px 12px;
 border-radius:8px;
-padding:6px 10px;
 cursor:pointer;
 }
 
-.add{
+.add-area{
 display:flex;
 gap:10px;
 margin-top:20px;
@@ -51,77 +63,145 @@ margin-top:20px;
 input{
 flex:1;
 padding:10px;
-border-radius:8px;
 border:none;
+border-radius:8px;
 }
 
-.addbtn{
+.add-btn{
 background:#2563eb;
 }
 
-.price{
-color:#22c55e;
-font-size:14px;
-margin-top:5px;
+.refresh{
+text-align:center;
+margin-bottom:20px;
+opacity:0.8;
 }
 </style>
 </head>
 
 <body>
 
-<h1>📈 나의 주식 위젯</h1>
+<h1>📈 실시간 주식 위젯</h1>
+
+<div class="refresh">
+1분마다 자동 갱신
+</div>
 
 <div id="stocks"></div>
 
-<div class="add">
+<div class="add-area">
 <input id="newStock" placeholder="종목명 입력">
-<button class="addbtn" onclick="addStock()">추가</button>
+<button class="add-btn" onclick="addStock()">추가</button>
 </div>
 
 <script>
 
+const stockMap = {
+"삼성전자":"005930.KS",
+"KODEX 미국나스닥100":"379810.KS",
+"일진전기":"103590.KS"
+};
+
 let stocks =
-JSON.parse(localStorage.getItem("stocks")) || [
+JSON.parse(localStorage.getItem("stocks"))
+||
+[
 "삼성전자",
 "KODEX 미국나스닥100",
 "일진전기"
 ];
 
-function save(){
+function saveStocks(){
+
 localStorage.setItem(
 "stocks",
 JSON.stringify(stocks)
 );
+
 }
 
-function render(){
+async function getPrice(symbol){
+
+try{
+
+const url =
+`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`;
+
+const res = await fetch(url);
+
+const data = await res.json();
+
+const price =
+data.chart.result[0].meta.regularMarketPrice;
+
+return price;
+
+}catch(err){
+
+return "조회 실패";
+
+}
+
+}
+
+async function render(){
 
 const area =
 document.getElementById("stocks");
 
 area.innerHTML="";
 
-stocks.forEach((s,i)=>{
+for(const stock of stocks){
+
+const symbol =
+stockMap[stock];
+
+let priceText =
+"종목코드 없음";
+
+if(symbol){
+
+const price =
+await getPrice(symbol);
+
+priceText =
+typeof price === "number"
+?
+price.toLocaleString()
+:
+price;
+
+}
 
 area.innerHTML += `
+
 <div class="card">
+
 <div>
-<div class="name">${s}</div>
+
+<div class="name">${stock}</div>
+
 <div class="price">
-주가 연동 준비중
-</div>
+${priceText}
 </div>
 
-<button onclick="removeStock(${i})">
+<div class="time">
+${new Date().toLocaleTimeString()}
+</div>
+
+</div>
+
+<button onclick="removeStock('${stock}')">
 삭제
 </button>
 
 </div>
+
 `;
 
-});
+}
 
-save();
+saveStocks();
 
 }
 
@@ -130,12 +210,12 @@ function addStock(){
 const input =
 document.getElementById("newStock");
 
-const name =
+const value =
 input.value.trim();
 
-if(name==="") return;
+if(!value) return;
 
-stocks.push(name);
+stocks.push(value);
 
 input.value="";
 
@@ -143,15 +223,23 @@ render();
 
 }
 
-function removeStock(index){
+function removeStock(name){
 
-stocks.splice(index,1);
+stocks =
+stocks.filter(
+s => s !== name
+);
 
 render();
 
 }
 
 render();
+
+setInterval(
+render,
+60000
+);
 
 </script>
 
