@@ -1,102 +1,3 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>실시간 주식 위젯</title>
-
-<style>
-body{
-    background:#111827;
-    color:white;
-    font-family:sans-serif;
-    margin:0;
-    padding:20px;
-}
-
-h1{
-    text-align:center;
-}
-
-.refresh{
-    text-align:center;
-    opacity:0.8;
-    margin-bottom:20px;
-}
-
-.card{
-    background:#1f2937;
-    border-radius:15px;
-    padding:15px;
-    margin-bottom:12px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-
-.name{
-    font-size:20px;
-    font-weight:bold;
-}
-
-.price{
-    font-size:18px;
-    color:#22c55e;
-    margin-top:5px;
-}
-
-.time{
-    font-size:12px;
-    opacity:0.7;
-}
-
-button{
-    border:none;
-    border-radius:8px;
-    padding:8px 12px;
-    cursor:pointer;
-}
-
-.delete-btn{
-    background:#ef4444;
-    color:white;
-}
-
-.add-area{
-    display:flex;
-    gap:10px;
-    margin-top:20px;
-}
-
-.add-btn{
-    background:#2563eb;
-    color:white;
-}
-
-input{
-    flex:1;
-    padding:10px;
-    border:none;
-    border-radius:8px;
-}
-</style>
-
-</head>
-<body>
-
-<h1>📈 실시간 주식 위젯</h1>
-
-<div class="refresh">
-1분마다 자동 갱신
-</div>
-
-<div id="stocks"></div>
-
-<div class="add-area">
-    <input id="newStock" placeholder="종목명 입력">
-    <button class="add-btn" onclick="addStock()">추가</button>
-</div>
-
 <script>
 
 const stockMap = {
@@ -105,32 +6,23 @@ const stockMap = {
     "일진전기":"103590.KS"
 };
 
-let stocks =
-JSON.parse(localStorage.getItem("stocks")) ||
-[
+let stocks = [
     "삼성전자",
     "KODEX 미국나스닥100",
     "일진전기"
 ];
-
-function saveStocks(){
-    localStorage.setItem(
-        "stocks",
-        JSON.stringify(stocks)
-    );
-}
 
 async function getPrice(symbol){
 
     try{
 
         const res = await fetch(
-            `https://stock-api.royental9.workers.dev/?symbol=${symbol}`
+            "https://stock-api.royental9.workers.dev/?symbol=" + symbol
         );
 
         const data = await res.json();
 
-        return data.price || "조회중";
+        return data.price;
 
     }catch(error){
 
@@ -152,10 +44,31 @@ async function render(){
         const symbol =
         stockMap[stock];
 
-        let priceText =
-        "종목코드 없음";
+        const price =
+        await getPrice(symbol);
 
-        if(symbol){
+        area.innerHTML +=
+        `
+        <div class="card">
 
-            priceText =
-            await getPrice
+            <div>
+
+                <div class="name">
+                    ${stock}
+                </div>
+
+                <div class="price">
+                    ${price}
+                </div>
+
+            </div>
+
+        </div>
+        `;
+    }
+
+}
+
+render();
+
+</script>
