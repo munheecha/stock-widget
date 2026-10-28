@@ -1,1 +1,159 @@
-주식 위젯 테스트 성공!
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>나의 주식 위젯</title>
+
+<style>
+body{
+margin:0;
+background:#111827;
+color:white;
+font-family:sans-serif;
+padding:20px;
+}
+
+h1{
+text-align:center;
+}
+
+.card{
+background:#1f2937;
+padding:15px;
+border-radius:15px;
+margin-bottom:12px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.name{
+font-size:18px;
+font-weight:bold;
+}
+
+button{
+background:#ef4444;
+color:white;
+border:none;
+border-radius:8px;
+padding:6px 10px;
+cursor:pointer;
+}
+
+.add{
+display:flex;
+gap:10px;
+margin-top:20px;
+}
+
+input{
+flex:1;
+padding:10px;
+border-radius:8px;
+border:none;
+}
+
+.addbtn{
+background:#2563eb;
+}
+
+.price{
+color:#22c55e;
+font-size:14px;
+margin-top:5px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>📈 나의 주식 위젯</h1>
+
+<div id="stocks"></div>
+
+<div class="add">
+<input id="newStock" placeholder="종목명 입력">
+<button class="addbtn" onclick="addStock()">추가</button>
+</div>
+
+<script>
+
+let stocks =
+JSON.parse(localStorage.getItem("stocks")) || [
+"삼성전자",
+"KODEX 미국나스닥100",
+"일진전기"
+];
+
+function save(){
+localStorage.setItem(
+"stocks",
+JSON.stringify(stocks)
+);
+}
+
+function render(){
+
+const area =
+document.getElementById("stocks");
+
+area.innerHTML="";
+
+stocks.forEach((s,i)=>{
+
+area.innerHTML += `
+<div class="card">
+<div>
+<div class="name">${s}</div>
+<div class="price">
+주가 연동 준비중
+</div>
+</div>
+
+<button onclick="removeStock(${i})">
+삭제
+</button>
+
+</div>
+`;
+
+});
+
+save();
+
+}
+
+function addStock(){
+
+const input =
+document.getElementById("newStock");
+
+const name =
+input.value.trim();
+
+if(name==="") return;
+
+stocks.push(name);
+
+input.value="";
+
+render();
+
+}
+
+function removeStock(index){
+
+stocks.splice(index,1);
+
+render();
+
+}
+
+render();
+
+</script>
+
+</body>
+</html>
