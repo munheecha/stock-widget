@@ -1,32 +1,30 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>주식 위젯</title>
 
 <style>
-
 body{
-  font-family:sans-serif;
-  background:#111827;
-  color:white;
-  padding:20px;
+    background:#111827;
+    color:white;
+    font-family:sans-serif;
+    padding:20px;
 }
 
 .card{
-  background:#1f2937;
-  padding:15px;
-  border-radius:10px;
-  margin-bottom:10px;
+    background:#1f2937;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:10px;
 }
 
 .price{
-  color:#22c55e;
-  font-weight:bold;
+    color:#22c55e;
+    font-size:20px;
+    font-weight:bold;
 }
-
 </style>
 
 </head>
@@ -43,33 +41,28 @@ body{
 
 async function loadData(){
 
-  try{
+    try{
 
-    const res =
-    await fetch(
-      "https://stock-api.royental9.workers.dev/?symbol=005930.KS"
-    );
+        const res = await fetch(
+            "https://stock-api.royental9.workers.dev/?symbol=005930.KS"
+        );
 
-    const data =
-    await res.json();
+        const data = await res.json();
 
-    document.getElementById("stocks").innerHTML =
+        document.getElementById("stocks").innerHTML =
+        `
+        <div class="card">
+            <h3>삼성전자</h3>
+            <div class="price">${data.price}</div>
+        </div>
+        `;
 
-    `
-    <div class="card">
-      <h3>삼성전자</h3>
-      <div class="price">
-        ${data.price}
-      </div>
-    </div>
-    `;
+    }catch(error){
 
-  }catch(error){
+        document.getElementById("stocks").innerHTML =
+        "오류 발생 : " + error.message;
 
-    document.getElementById("stocks").innerHTML =
-    "오류 발생";
-
-  }
+    }
 
 }
 
