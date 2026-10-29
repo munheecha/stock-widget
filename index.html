@@ -61,35 +61,48 @@ h1{
 <script>
 
 const stocks = [
-
 {
-name:"삼성전자",
-symbol:"005930.KS"
+    name:"삼성전자",
+    symbol:"005930.KS"
 },
-
 {
-name:"KODEX 미국나스닥100",
-symbol:"379810.KS"
+    name:"KODEX 미국나스닥100",
+    symbol:"379810.KS"
 },
-
 {
-name:"일진전기",
-symbol:"103590.KS"
+    name:"일진전기",
+    symbol:"103590.KS"
 }
-
 ];
 
 async function getPrice(symbol){
 
-    const res =
-    await fetch(
+    const res = await fetch(
         "https://stock-api.royental9.workers.dev/?symbol=" + symbol
     );
 
-    const data =
-    await res.json();
+    const data = await res.json();
 
     return data.price;
+
+}
+
+function saveTarget(symbol,value){
+
+    localStorage.setItem(
+        "target_" + symbol,
+        value
+    );
+
+}
+
+function getTarget(symbol){
+
+    return (
+        localStorage.getItem(
+            "target_" + symbol
+        ) || ""
+    );
 
 }
 
@@ -103,42 +116,166 @@ async function loadStocks(){
     for(const stock of stocks){
 
         const price =
-await getPrice(stock.symbol);
+        await getPrice(stock.symbol);
 
-const displayPrice =
-price
-? Number(price).toLocaleString("ko-KR")
-: "조회 실패";
+        const target =
+        Number(
+            getTarget(stock.symbol)
+        );
 
-        area.innerHTML +=
+        const displayPrice =
+        Number(price)
+        .toLocaleString("ko-KR");
 
-        `
-        <div class="card">
+        let remainText = "";
+        let progressText = "";
+        let reached = false;
+
+        if(target > 0){
+
+            const remain =
+            target - price;
+
+            const progress =
+            ((price / target) * 100)
+            .toFixed(1);
+
+            progressText =
+            "달성률 : "
+            + progress + "%";
+
+            if(remain <= 0){
+
+                remainText =
+                "🎉 목표 달성";
+
+                reached = true;
+
+                if(
+                  Notification.permission
+                  === "granted"
+                ){
+
+                    new Notification(
+                      stock.name +
+                      " 목표가 도달",
+                      {
+                        body:
+                        displayPrice +
+                        "원"
+                      }
+                    );
+
+                }
+
+            }else{
+
+                remainText =
+                "목표까지 "
+                +
+                remain.toLocaleString("ko-KR")
+                +
+                "원";
+
+            }
+
+        }
+
+        area.innerHTML += `
+
+        <div class="card"
+             style="
+             border:
+             ${
+               reached
+               ? '2px solid #22c55e'
+               : 'none'
+             };
+             ">
 
             <div class="stock-name">
-            ${stock.name}
+                ${stock.name}
             </div>
 
             <div class="price">
-            ${displayPrice}
+                ${displayPrice}원
+            </div>
+
+            <div style="
+              color:#d1d5db;
+              margin-top:8px;">
+              ${progressText}
+            </div>
+
+            <div style="
+              color:${
+                reached
+                ? '#22c55e'
+                : '#fbbf24'
+              };
+              margin-top:4px;">
+              ${remainText}
+            </div>
+
+            <div
+            style="margin-top:12px;">
+
+                <input
+                  id="input_${stock.symbol}"
+                  type="number"
+                  placeholder="목표가 입력"
+                  value="${getTarget(stock.symbol)}"
+                  style="
+                  width:180px;
+                  padding:8px;
+                  border-radius:8px;
+                  border:none;">
+
+                <button
+                onclick="
+                saveTarget(
+                  '${stock.symbol}',
+                  document.getElementById(
+                  'input_${stock.symbol}'
+                  ).value
+                );
+                loadStocks();
+                "
+                style="
+                padding:8px;
+                margin-left:6px;">
+                저장
+                </button>
+
             </div>
 
         </div>
+
         `;
     }
 
-    document.getElementById("updateTime")
+    document
+    .getElementById("updateTime")
     .innerText =
     "마지막 갱신 : "
-    + new Date().toLocaleTimeString();
+    +
+    new Date()
+    .toLocaleTimeString();
 
+}
+
+if(
+Notification.permission
+!== "granted"
+){
+    Notification.requestPermission();
 }
 
 loadStocks();
 
 setInterval(
     loadStocks,
-    300000
+    600000
 );
 
 </script>
