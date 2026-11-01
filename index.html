@@ -85,14 +85,24 @@ async function loadStockList(){
 
 async function getPrice(symbol){
 
-    const res =
-    await fetch(
-        "https://stock-api.royental9.workers.dev/?symbol=" + symbol
-    );
+    try{
 
-    const data = await res.json();
+        const res = await fetch(
+            "https://stock-api.royental9.workers.dev/?symbol=" + symbol
+        );
 
-    return data.price;
+        const data = await res.json();
+
+        console.log(symbol, data);
+
+        return Number(data.price || 0);
+
+    }catch(err){
+
+        console.error(err);
+
+        return 0;
+    }
 
 }
 
