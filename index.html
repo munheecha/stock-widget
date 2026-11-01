@@ -93,15 +93,16 @@ async function getPrice(symbol){
 
         const data = await res.json();
 
-        console.log(res);
+        console.log(symbol, data);
 
-        return Number(data.price || 0);
+        return data.price;
 
     }catch(err){
 
         console.error(err);
 
         return 0;
+
     }
 
 }
