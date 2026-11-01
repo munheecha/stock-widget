@@ -85,8 +85,6 @@ async function loadStockList(){
 
 async function getPrice(symbol){
 
-    console.log(symbol + "bbbb");
-
     const res =
     await fetch(
         "https://stock-api.royental9.workers.dev/?symbol=" + symbol
