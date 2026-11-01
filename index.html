@@ -60,51 +60,32 @@ h1{
 
 <script>
 
-let stocks = [];
-
-async function loadStockList(){
-
-    try{
-
-        const res = await fetch("./stocks.json");
-
-        stocks = await res.json();
-
-    }catch(err){
-
-        console.error(
-            "종목 파일 읽기 실패",
-            err
-        );
-
-        stocks = [];
-
-    }
-
+const stocks = [
+{
+    name:"삼성전자",
+    symbol:"005930.KS"
+},
+{
+    name:"KODEX 미국나스닥100",
+    symbol:"379810.KS"
+},
+{
+    name:"일진전기",
+    symbol:"103590.KS"
 }
+];
 
 async function getPrice(symbol){
 
-    try{
+    const res =
+    await fetch(
+        "https://stock-api.royental9.workers.dev/?symbol=" + symbol
+    );
 
-        const res = await fetch(
-            "https://stock-api.royental9.workers.dev/?symbol=" + symbol
-        );
+    const data =
+    await res.json();
 
-        const data = await res.json();
-
-        console.log("심볼:", symbol);
-        console.log("응답:", data); 
-
-        return data.price;
-
-    }catch(err){
-
-        console.error(err);
-
-        return 0;
-
-    }
+    return data.price;
 
 }
 
@@ -358,13 +339,7 @@ if(
     Notification.requestPermission();
 }
 
-(async ()=>{
-
-    await loadStockList();
-
-    await loadStocks();
-
-})();
+loadStocks();
 
 setInterval(
     loadStocks,
