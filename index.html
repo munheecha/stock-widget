@@ -15,6 +15,10 @@ body{
     padding:20px;
 }
 
+h1{
+    margin-bottom:5px;
+}
+
 .time{
     color:#9ca3af;
     margin-bottom:20px;
@@ -39,15 +43,21 @@ body{
     margin-top:10px;
 }
 
-</style>
+.error{
+    color:#ef4444;
+    font-size:28px;
+    font-weight:bold;
+    margin-top:10px;
+}
 
+</style>
 </head>
 
 <body>
 
 <h1>📈 나의 주식 위젯</h1>
 
-<div class="time" id="updateTime">
+<div id="updateTime" class="time">
 업데이트 중...
 </div>
 
@@ -73,70 +83,4 @@ async function loadStocks(){
         const stocks =
         await res.json();
 
-        console.log(stocks);
-
-        for(const stock of stocks){
-
-            if(stock.error){
-
-                area.innerHTML += `
-                <div class="card">
-                    <div class="stock-name">
-                        ${stock.name}
-                    </div>
-
-                    <div class="price"
-                         style="color:red">
-                        조회 실패
-                    </div>
-                </div>
-                `;
-
-                continue;
-            }
-
-            area.innerHTML += `
-            <div class="card">
-
-                <div class="stock-name">
-                    ${stock.name}
-                </div>
-
-                <div class="price">
-                    ${stock.price.toLocaleString("ko-KR")}원
-                </div>
-
-            </div>
-            `;
-        }
-
-        document.getElementById(
-            "updateTime"
-        ).innerText =
-        "마지막 갱신 : "
-        +
-        new Date()
-        .toLocaleTimeString();
-
-    }catch(err){
-
-        console.error(err);
-
-        area.innerHTML =
-        "<h2>데이터 조회 실패</h2>";
-
-    }
-
-}
-
-loadStocks();
-
-setInterval(
-    loadStocks,
-    600000
-);
-
-</script>
-
-</body>
-</html>
+        console
