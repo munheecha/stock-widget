@@ -93,7 +93,8 @@ async function getPrice(symbol){
 
         const data = await res.json();
 
-        console.log(symbol, data);
+        console.log("심볼:", symbol);
+        console.log("응답:", data);
 
         return data.price;
 
