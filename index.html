@@ -1,152 +1,3 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>주식 위젯</title>
-
-<style>
-
-body{
-    background:#111827;
-    color:white;
-    font-family:sans-serif;
-    margin:0;
-    padding:20px;
-}
-
-h1{
-    margin-bottom:5px;
-}
-
-.time{
-    color:#9ca3af;
-    margin-bottom:20px;
-}
-
-.card{
-    background:#1f2937;
-    padding:18px;
-    border-radius:12px;
-    margin-bottom:12px;
-}
-
-.stock-name{
-    font-size:18px;
-    font-weight:bold;
-}
-
-.price{
-    color:#22c55e;
-    font-size:28px;
-    font-weight:bold;
-    margin-top:10px;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<h1>📈 나의 주식 위젯</h1>
-
-<div class="time" id="updateTime">
-업데이트 중...
-</div>
-
-<div id="stocks"></div>
-
-<script>
-
-const stocks = [
-{
-    name:"삼성전자",
-    symbol:"005930.KS"
-},
-{
-    name:"KODEX 미국나스닥100",
-    symbol:"379810.KS"
-},
-{
-    name:"일진전기",
-    symbol:"103590.KS"
-}
-];
-
-async function getPrice(symbol){
-
-    try{
-
-        const res = await fetch(
-            "https://stock-api.royental9.workers.dev/?symbol="
-            + symbol +
-            "&t=" +
-            Date.now()
-        );
-
-        const data = await res.json();
-
-       console.log(
-        "현재 응답:",
-        JSON.stringify(data)
-);
-
-        if(
-            data.error ||
-            data.price === undefined ||
-            data.price === null
-        ){
-            return null;
-        }
-
-        return Number(data.price);
-
-    }catch(err){
-
-        console.error(err);
-
-        return null;
-
-    }
-
-}
-
-function saveTarget(symbol,value){
-
-    const target =
-    Number(value);
-
-    if(!target || target <= 0){
-
-        alert(
-          "목표가는 0보다 큰 숫자를 입력하세요."
-        );
-
-        return;
-
-    }
-
-    localStorage.setItem(
-        "target_" + symbol,
-        target
-    );
-
-    alert("저장 완료");
-
-}
-
-function getTarget(symbol){
-
-    return (
-      localStorage.getItem(
-        "target_" + symbol
-      ) || ""
-    );
-
-}
-
 async function loadStocks(){
 
     const area =
@@ -156,8 +7,8 @@ async function loadStocks(){
 
     const res =
     await fetch(
-      "https://stock-api.royental9.workers.dev?t="
-      + Date.now()
+        "https://stock-api.royental9.workers.dev?t="
+        + Date.now()
     );
 
     const data =
@@ -167,70 +18,6 @@ async function loadStocks(){
 
     for(const stock of data){
 
-        if(stock.error){
-
-            area.innerHTML += `
-            <div class="card">
-                <div class="stock-name">
-                  ${stock.name}
-                </div>
-                <div class="price"
-                     style="color:red;">
-                  조회 실패
-                </div>
-            </div>
-            `;
-
-            continue;
-        }
-
-        area.innerHTML += `
-        <div class="card">
-
-            <div class="stock-name">
-              ${stock.name}
-            </div>
-
-            <div class="price">
-              ${stock.price.toLocaleString("ko-KR")}원
-            </div>
-
-        </div>
-        `;
-    }
-}
-
-        const target =
-        Number(
-          getTarget(stock.symbol)
-        );
-
-        let progressText = "";
-        let remainText = "";
-
-        if(target > 0){
-
-            const progress =
-            (
-              price / target * 100
-            ).toFixed(1);
-
-            const remain =
-            target - price;
-
-            progressText =
-            "달성률 : "
-            + progress
-            + "%";
-
-            remainText =
-            remain <= 0
-            ? "🎉 목표 달성"
-            : "목표까지 "
-              + remain.toLocaleString("ko-KR")
-              + "원";
-        }
-
         area.innerHTML += `
         <div class="card">
 
@@ -239,80 +26,11 @@ async function loadStocks(){
             </div>
 
             <div class="price">
-                ${price.toLocaleString("ko-KR")}원
-            </div>
-
-            <div style="
-            margin-top:8px;
-            color:#22c55e;">
-                ${progressText}
-            </div>
-
-            <div style="
-            margin-top:6px;
-            color:#fbbf24;">
-                ${remainText}
-            </div>
-
-            <div style="
-            margin-top:12px;">
-
-                <input
-                    id="target_${stock.symbol}"
-                    type="number"
-                    value="${getTarget(stock.symbol)}"
-                    placeholder="목표가 입력"
-                    style="
-                    width:180px;
-                    padding:8px;
-                    border:none;
-                    border-radius:8px;">
-
-                <button
-                    onclick="
-                    saveTarget(
-                      '${stock.symbol}',
-                      document.getElementById(
-                      'target_${stock.symbol}'
-                      ).value
-                    );
-                    loadStocks();
-                    "
-                    style="
-                    padding:8px 12px;
-                    margin-left:5px;
-                    border:none;
-                    border-radius:8px;
-                    cursor:pointer;">
-                    저장
-                </button>
-
+                ${stock.price.toLocaleString("ko-KR")}원
             </div>
 
         </div>
         `;
     }
 
-    document
-    .getElementById(
-      "updateTime"
-    )
-    .innerText =
-    "마지막 갱신 : "
-    +
-    new Date()
-    .toLocaleTimeString();
-
 }
-
-loadStocks();
-
-setInterval(
-    loadStocks,
-    600000
-);
-
-</script>
-
-</body>
-</html>
