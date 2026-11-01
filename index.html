@@ -1,107 +1,64 @@
-const target =
-Number(
-    localStorage.getItem(
-        "target_" + stock.symbol
-    ) || 0
-);
+async function loadStocks(){
 
-let progressText = "";
-let remainText = "";
+    const area =
+    document.getElementById("stocks");
 
-if(target > 0){
+    area.innerHTML = "";
 
-    const progress =
-    (
-      stock.price / target * 100
-    ).toFixed(1);
+    try{
 
-    const remain =
-    target - stock.price;
+        const res =
+        await fetch(
+            "https://stock-api.royental9.workers.dev?t="
+            + Date.now()
+        );
 
-    progressText =
-    "달성률 : "
-    + progress
-    + "%";
+        const stocks =
+        await res.json();
 
-    remainText =
-    remain <= 0
-    ? "🎉 목표 달성"
-    : "목표까지 "
-      + remain.toLocaleString("ko-KR")
-      + "원";
+        console.log(stocks);
+
+        for(const stock of stocks){
+
+            if(stock.error){
+
+                area.innerHTML += `
+                <div class="card">
+                    <div class="stock-name">
+                        ${stock.name}
+                    </div>
+
+                    <div class="error">
+                        조회 실패
+                    </div>
+                </div>
+                `;
+
+                continue;
+            }
+
+            area.innerHTML += `
+            <div class="card">
+
+                <div class="stock-name">
+                    ${stock.name}
+                </div>
+
+                <div class="price">
+                    ${stock.price.toLocaleString("ko-KR")}원
+                </div>
+
+            </div>
+            `;
+        }
+
+    }catch(err){
+
+        console.error(err);
+
+        area.innerHTML =
+        "<h2>데이터 조회 실패</h2>";
+
+    }
+
 }
-
-area.innerHTML += `
-<div class="card">
-
-    <div class="stock-name">
-        ${stock.name}
-    </div>
-
-    <div class="price">
-        ${stock.price.toLocaleString("ko-KR")}원
-    </div>
-
-    <div style="
-      margin-top:8px;
-      color:#22c55e;">
-
-      ${progressText}
-
-    </div>
-
-    <div style="
-      margin-top:6px;
-      color:#fbbf24;">
-
-      ${remainText}
-
-    </div>
-
-    <div style="
-      margin-top:12px;">
-
-      <input
-        id="target_${stock.symbol}"
-        type="number"
-        value="${
-          localStorage.getItem(
-            'target_' + stock.symbol
-          ) || ''
-        }"
-
-        placeholder="목표가 입력"
-
-        style="
-          width:180px;
-          padding:8px;
-          border:none;
-          border-radius:8px;">
-
-      <button
-        onclick="
-          localStorage.setItem(
-            'target_${stock.symbol}',
-            document.getElementById(
-              'target_${stock.symbol}'
-            ).value
-          );
-
-          loadStocks();
-        "
-
-        style="
-          padding:8px 12px;
-          border:none;
-          border-radius:8px;
-          margin-left:5px;
-          cursor:pointer;">
-
-          저장
-
-      </button>
-
-    </div>
-
-</div>
-`;
