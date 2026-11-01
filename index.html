@@ -1,3 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주식 위젯</title>
+
+<link rel="icon" href="data:,">
+
+<style>
+
+body{
+    background:#111827;
+    color:white;
+    font-family:sans-serif;
+    margin:0;
+    padding:20px;
+}
+
+h1{
+    margin-bottom:5px;
+}
+
+.time{
+    color:#9ca3af;
+    margin-bottom:20px;
+}
+
+.card{
+    background:#1f2937;
+    padding:18px;
+    border-radius:12px;
+    margin-bottom:12px;
+}
+
+.stock-name{
+    font-size:18px;
+    font-weight:bold;
+}
+
+.price{
+    color:#22c55e;
+    font-size:28px;
+    font-weight:bold;
+    margin-top:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>📈 나의 주식 위젯</h1>
+
+<div class="time" id="updateTime">
+업데이트 중...
+</div>
+
+<div id="stocks"></div>
+
+<script>
+
+function notifyOnce(symbol){
+
+    const key =
+    "notified_" + symbol;
+
+    if(
+        localStorage.getItem(key)
+    ){
+        return false;
+    }
+
+    localStorage.setItem(
+        key,
+        "Y"
+    );
+
+    return true;
+
+}
+
 async function loadStocks(){
 
     const area =
@@ -18,47 +100,68 @@ async function loadStocks(){
 
         console.log(stocks);
 
+        if(!Array.isArray(stocks)){
+
+            area.innerHTML =
+            "<h2>API 오류</h2>";
+
+            return;
+
+        }
+
         for(const stock of stocks){
 
             if(stock.error){
 
                 area.innerHTML += `
                 <div class="card">
+
                     <div class="stock-name">
                         ${stock.name}
                     </div>
 
-                    <div class="error">
+                    <div class="price"
+                         style="color:#ef4444;">
                         조회 실패
                     </div>
+
                 </div>
                 `;
 
                 continue;
             }
 
-            area.innerHTML += `
-            <div class="card">
+            const target =
+            Number(
+                localStorage.getItem(
+                    "target_" + stock.symbol
+                ) || 0
+            );
 
-                <div class="stock-name">
-                    ${stock.name}
-                </div>
+            let progressText = "";
+            let remainText = "";
+            let cardBorder = "";
 
-                <div class="price">
-                    ${stock.price.toLocaleString("ko-KR")}원
-                </div>
+            if(target > 0){
 
-            </div>
-            `;
-        }
+                const progress =
+                (
+                    stock.price
+                    / target
+                    * 100
+                ).toFixed(1);
 
-    }catch(err){
+                const remain =
+                target - stock.price;
 
-        console.error(err);
+                progressText =
+                "달성률 : "
+                + progress
+                + "%";
 
-        area.innerHTML =
-        "<h2>데이터 조회 실패</h2>";
+                if(remain <= 0){
 
-    }
+                    remainText =
+                    "🎉 목표 달성";
 
-}
+               
