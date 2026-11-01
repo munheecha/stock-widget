@@ -154,30 +154,51 @@ async function loadStocks(){
 
     area.innerHTML = "";
 
-    for(const stock of stocks){
+    const res =
+    await fetch(
+      "https://stock-api.royental9.workers.dev?t="
+      + Date.now()
+    );
 
-        const price =
-        await getPrice(stock.symbol);
+    const data =
+    await res.json();
 
-        if(price === null){
+    console.log(data);
+
+    for(const stock of data){
+
+        if(stock.error){
 
             area.innerHTML += `
             <div class="card">
-
                 <div class="stock-name">
-                    ${stock.name}
+                  ${stock.name}
                 </div>
-
                 <div class="price"
-                     style="color:#ef4444;">
-                    조회 실패
+                     style="color:red;">
+                  조회 실패
                 </div>
-
             </div>
             `;
 
             continue;
         }
+
+        area.innerHTML += `
+        <div class="card">
+
+            <div class="stock-name">
+              ${stock.name}
+            </div>
+
+            <div class="price">
+              ${stock.price.toLocaleString("ko-KR")}원
+            </div>
+
+        </div>
+        `;
+    }
+}
 
         const target =
         Number(
