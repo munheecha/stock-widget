@@ -360,9 +360,7 @@ if(
 
 (async ()=>{
 
-    await loadStockList();
-
-    await loadStocks();
+    await Promise.all(loadStockList, loadStocks);
 
 })();
 
