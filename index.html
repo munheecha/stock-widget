@@ -8,7 +8,6 @@
 <link rel="icon" href="data:,">
 
 <style>
-
 body{
     background:#111827;
     color:white;
@@ -45,14 +44,29 @@ h1{
     margin-top:10px;
 }
 
+input{
+    width:180px;
+    padding:8px;
+    border:none;
+    border-radius:8px;
+}
+
+button{
+    padding:8px 12px;
+    border:none;
+    border-radius:8px;
+    margin-left:5px;
+    cursor:pointer;
+}
 </style>
+
 </head>
 
 <body>
 
 <h1>📈 나의 주식 위젯</h1>
 
-<div class="time" id="updateTime">
+<div id="updateTime" class="time">
 업데이트 중...
 </div>
 
@@ -66,11 +80,9 @@ function saveTarget(symbol,value){
 
     if(!target || target <= 0){
 
-        alert(
-            "목표가는 0보다 큰 숫자를 입력하세요."
-        );
-
+        alert("목표가는 0보다 큰 숫자를 입력하세요.");
         return;
+
     }
 
     localStorage.setItem(
@@ -103,10 +115,7 @@ function notifyOnce(symbol){
         return false;
     }
 
-    localStorage.setItem(
-        key,
-        "Y"
-    );
+    localStorage.setItem(key,"Y");
 
     return true;
 
@@ -121,8 +130,7 @@ async function loadStocks(){
 
     try{
 
-        const res =
-        await fetch(
+        const res = await fetch(
             "https://stock-api.royental9.workers.dev?t="
             + Date.now()
         );
@@ -130,7 +138,9 @@ async function loadStocks(){
         const stocks =
         await res.json();
 
-        for(const stock of stocks){
+        console.log(stocks);
+
+        stocks.forEach(stock => {
 
             const target =
             Number(
@@ -149,22 +159,29 @@ async function loadStocks(){
 
                 const progress =
                 (
-                    stock.price / target * 100
+                    stock.price /
+                    target * 100
                 ).toFixed(1);
 
                 progressText =
-                "달성률 : "
-                + progress
-                + "%";
+                "달성률 : " +
+                progress + "%";
 
                 if(progress < 80){
-                    progressColor = "#ef4444";
-                }
-                else if(progress < 100){
-                    progressColor = "#f59e0b";
-                }
-                else{
-                    progressColor = "#22c55e";
+
+                    progressColor =
+                    "#ef4444";
+
+                }else if(progress < 100){
+
+                    progressColor =
+                    "#f59e0b";
+
+                }else{
+
+                    progressColor =
+                    "#22c55e";
+
                 }
 
                 if(remain <= 0){
@@ -176,9 +193,12 @@ async function loadStocks(){
                     "border:2px solid #22c55e;";
 
                     if(
-                        Notification.permission === "granted"
+                        Notification.permission
+                        === "granted"
                         &&
-                        notifyOnce(stock.symbol)
+                        notifyOnce(
+                            stock.symbol
+                        )
                     ){
 
                         new Notification(
@@ -221,34 +241,26 @@ async function loadStocks(){
                     ${stock.price.toLocaleString("ko-KR")}원
                 </div>
 
-                <div
-                style="
-                color:${progressColor};
-                margin-top:8px;">
+                <div style="
+                    color:${progressColor};
+                    margin-top:8px;">
                     ${progressText}
                 </div>
 
-                <div
-                style="
-                color:#fbbf24;
-                margin-top:6px;">
+                <div style="
+                    color:#fbbf24;
+                    margin-top:6px;">
                     ${remainText}
                 </div>
 
-                <div
-                style="
-                margin-top:12px;">
+                <div style="
+                    margin-top:12px;">
 
                     <input
                         id="target_${stock.symbol}"
                         type="number"
                         value="${getTarget(stock.symbol)}"
-                        placeholder="목표가 입력"
-                        style="
-                        width:180px;
-                        padding:8px;
-                        border:none;
-                        border-radius:8px;">
+                        placeholder="목표가 입력">
 
                     <button
                         onclick="
@@ -258,30 +270,19 @@ async function loadStocks(){
                         'target_${stock.symbol}'
                         ).value
                         );
-                        "
-                        style="
-                        padding:8px 12px;
-                        border:none;
-                        border-radius:8px;
-                        margin-left:5px;
-                        cursor:pointer;">
-
+                        ">
                         저장
-
                     </button>
 
                 </div>
 
             </div>
             `;
+        });
 
-        }
-
-        document
-        .getElementById(
+        document.getElementById(
             "updateTime"
-        )
-        .innerText =
+        ).innerText =
         "마지막 갱신 : "
         +
         new Date()
