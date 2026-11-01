@@ -77,16 +77,17 @@ const stocks = [
 
 async function getPrice(symbol){
 
-    const res =
-    await fetch(
+    const res = await fetch(
         "https://stock-api.royental9.workers.dev/?symbol=" + symbol
     );
 
-    const data =
-    await res.json();
+    const data = await res.json();
+
+    console.log("심볼:", symbol);
+    console.log("price:", data.price);
+    console.log("타입:", typeof data.price);
 
     return data.price;
-
 }
 
 function saveTarget(symbol,value){
