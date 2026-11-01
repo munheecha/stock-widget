@@ -1,3 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주식 위젯</title>
+
+<style>
+
+body{
+    background:#111827;
+    color:white;
+    font-family:sans-serif;
+    margin:0;
+    padding:20px;
+}
+
+.time{
+    color:#9ca3af;
+    margin-bottom:20px;
+}
+
+.card{
+    background:#1f2937;
+    padding:18px;
+    border-radius:12px;
+    margin-bottom:12px;
+}
+
+.stock-name{
+    font-size:18px;
+    font-weight:bold;
+}
+
+.price{
+    color:#22c55e;
+    font-size:28px;
+    font-weight:bold;
+    margin-top:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>📈 나의 주식 위젯</h1>
+
+<div class="time" id="updateTime">
+업데이트 중...
+</div>
+
+<div id="stocks"></div>
+
+<script>
+
 async function loadStocks(){
 
     const area =
@@ -5,32 +62,81 @@ async function loadStocks(){
 
     area.innerHTML = "";
 
-    const res =
-    await fetch(
-        "https://stock-api.royental9.workers.dev?t="
-        + Date.now()
-    );
+    try{
 
-    const data =
-    await res.json();
+        const res =
+        await fetch(
+            "https://stock-api.royental9.workers.dev?t="
+            + Date.now()
+        );
 
-    console.log(data);
+        const stocks =
+        await res.json();
 
-    for(const stock of data){
+        console.log(stocks);
 
-        area.innerHTML += `
-        <div class="card">
+        for(const stock of stocks){
 
-            <div class="stock-name">
-                ${stock.name}
+            if(stock.error){
+
+                area.innerHTML += `
+                <div class="card">
+                    <div class="stock-name">
+                        ${stock.name}
+                    </div>
+
+                    <div class="price"
+                         style="color:red">
+                        조회 실패
+                    </div>
+                </div>
+                `;
+
+                continue;
+            }
+
+            area.innerHTML += `
+            <div class="card">
+
+                <div class="stock-name">
+                    ${stock.name}
+                </div>
+
+                <div class="price">
+                    ${stock.price.toLocaleString("ko-KR")}원
+                </div>
+
             </div>
+            `;
+        }
 
-            <div class="price">
-                ${stock.price.toLocaleString("ko-KR")}원
-            </div>
+        document.getElementById(
+            "updateTime"
+        ).innerText =
+        "마지막 갱신 : "
+        +
+        new Date()
+        .toLocaleTimeString();
 
-        </div>
-        `;
+    }catch(err){
+
+        console.error(err);
+
+        area.innerHTML =
+        "<h2>데이터 조회 실패</h2>";
+
     }
 
 }
+
+loadStocks();
+
+setInterval(
+    loadStocks,
+    600000
+);
+
+</script>
+
+</body>
+</html>
