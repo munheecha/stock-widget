@@ -1,86 +1,107 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>주식 위젯</title>
+const target =
+Number(
+    localStorage.getItem(
+        "target_" + stock.symbol
+    ) || 0
+);
 
-<style>
+let progressText = "";
+let remainText = "";
 
-body{
-    background:#111827;
-    color:white;
-    font-family:sans-serif;
-    margin:0;
-    padding:20px;
+if(target > 0){
+
+    const progress =
+    (
+      stock.price / target * 100
+    ).toFixed(1);
+
+    const remain =
+    target - stock.price;
+
+    progressText =
+    "달성률 : "
+    + progress
+    + "%";
+
+    remainText =
+    remain <= 0
+    ? "🎉 목표 달성"
+    : "목표까지 "
+      + remain.toLocaleString("ko-KR")
+      + "원";
 }
 
-h1{
-    margin-bottom:5px;
-}
+area.innerHTML += `
+<div class="card">
 
-.time{
-    color:#9ca3af;
-    margin-bottom:20px;
-}
+    <div class="stock-name">
+        ${stock.name}
+    </div>
 
-.card{
-    background:#1f2937;
-    padding:18px;
-    border-radius:12px;
-    margin-bottom:12px;
-}
+    <div class="price">
+        ${stock.price.toLocaleString("ko-KR")}원
+    </div>
 
-.stock-name{
-    font-size:18px;
-    font-weight:bold;
-}
+    <div style="
+      margin-top:8px;
+      color:#22c55e;">
 
-.price{
-    color:#22c55e;
-    font-size:28px;
-    font-weight:bold;
-    margin-top:10px;
-}
+      ${progressText}
 
-.error{
-    color:#ef4444;
-    font-size:28px;
-    font-weight:bold;
-    margin-top:10px;
-}
+    </div>
 
-</style>
-</head>
+    <div style="
+      margin-top:6px;
+      color:#fbbf24;">
 
-<body>
+      ${remainText}
 
-<h1>📈 나의 주식 위젯</h1>
+    </div>
 
-<div id="updateTime" class="time">
-업데이트 중...
+    <div style="
+      margin-top:12px;">
+
+      <input
+        id="target_${stock.symbol}"
+        type="number"
+        value="${
+          localStorage.getItem(
+            'target_' + stock.symbol
+          ) || ''
+        }"
+
+        placeholder="목표가 입력"
+
+        style="
+          width:180px;
+          padding:8px;
+          border:none;
+          border-radius:8px;">
+
+      <button
+        onclick="
+          localStorage.setItem(
+            'target_${stock.symbol}',
+            document.getElementById(
+              'target_${stock.symbol}'
+            ).value
+          );
+
+          loadStocks();
+        "
+
+        style="
+          padding:8px 12px;
+          border:none;
+          border-radius:8px;
+          margin-left:5px;
+          cursor:pointer;">
+
+          저장
+
+      </button>
+
+    </div>
+
 </div>
-
-<div id="stocks"></div>
-
-<script>
-
-async function loadStocks(){
-
-    const area =
-    document.getElementById("stocks");
-
-    area.innerHTML = "";
-
-    try{
-
-        const res =
-        await fetch(
-            "https://stock-api.royental9.workers.dev?t="
-            + Date.now()
-        );
-
-        const stocks =
-        await res.json();
-
-        console
+`;
