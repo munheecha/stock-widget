@@ -8,6 +8,7 @@
 <link rel="icon" href="data:,">
 
 <style>
+
 body{
     background:#111827;
     color:white;
@@ -44,20 +45,31 @@ h1{
     margin-top:10px;
 }
 
+.info{
+    color:#d1d5db;
+    margin-top:6px;
+}
+
 input{
-    width:180px;
+    width:120px;
     padding:8px;
     border:none;
     border-radius:8px;
+    margin-right:5px;
 }
 
 button{
     padding:8px 12px;
     border:none;
     border-radius:8px;
-    margin-left:5px;
     cursor:pointer;
 }
+
+.save-btn{
+    background:#2563eb;
+    color:white;
+}
+
 </style>
 
 </head>
@@ -76,11 +88,15 @@ button{
 
 function saveTarget(symbol,value){
 
-    const target = Number(value);
+    const target =
+    Number(value);
 
     if(!target || target <= 0){
 
-        alert("목표가는 0보다 큰 숫자를 입력하세요.");
+        alert(
+        "목표가는 0보다 큰 숫자를 입력하세요."
+        );
+
         return;
 
     }
@@ -106,16 +122,73 @@ function getTarget(symbol){
 
 }
 
+function saveHolding(symbol){
+
+    const qty =
+    Number(
+        document.getElementById(
+            "qty_" + symbol
+        ).value
+    );
+
+    const avg =
+    Number(
+        document.getElementById(
+            "avg_" + symbol
+        ).value
+    );
+
+    localStorage.setItem(
+        "qty_" + symbol,
+        qty
+    );
+
+    localStorage.setItem(
+        "avg_" + symbol,
+        avg
+    );
+
+    loadStocks();
+
+}
+
+function getHolding(symbol){
+
+    return {
+
+        qty:
+        Number(
+            localStorage.getItem(
+                "qty_" + symbol
+            )
+        ) || 0,
+
+        avg:
+        Number(
+            localStorage.getItem(
+                "avg_" + symbol
+            )
+        ) || 0
+
+    };
+
+}
+
 function notifyOnce(symbol){
 
     const key =
     "notified_" + symbol;
 
-    if(localStorage.getItem(key)){
+    if(
+        localStorage.getItem(key)
+    ){
         return false;
     }
 
-    localStorage.setItem(key,"Y");
+    localStorage.setItem(
+        key,
+        "Y"
+    );
 
     return true;
 
@@ -130,7 +203,8 @@ async function loadStocks(){
 
     try{
 
-        const res = await fetch(
+        const res =
+        await fetch(
             "https://stock-api.royental9.workers.dev?t="
             + Date.now()
         );
@@ -138,14 +212,43 @@ async function loadStocks(){
         const stocks =
         await res.json();
 
-        console.log(stocks);
-
         stocks.forEach(stock => {
 
             const target =
             Number(
                 getTarget(stock.symbol)
             );
+
+            const holding =
+            getHolding(stock.symbol);
+
+            const qty =
+            holding.qty;
+
+            const avg =
+            holding.avg;
+
+            const evalAmount =
+            stock.price * qty;
+
+            const profit =
+            (stock.price - avg)
+            * qty;
+
+            const profitRate =
+            avg > 0
+            ? (
+                (
+                (stock.price - avg)
+                / avg
+                ) * 100
+              ).toFixed(2)
+            : 0;
+
+            const profitColor =
+            profit >= 0
+            ? "#22c55e"
+            : "#ef4444";
 
             let progressText = "";
             let remainText = "";
@@ -159,20 +262,25 @@ async function loadStocks(){
 
                 const progress =
                 (
-                    stock.price /
-                    target * 100
+                    stock.price
+                    /
+                    target
+                    * 100
                 ).toFixed(1);
 
                 progressText =
-                "달성률 : " +
-                progress + "%";
+                "달성률 : "
+                + progress
+                + "%";
 
                 if(progress < 80){
 
                     progressColor =
                     "#ef4444";
 
-                }else if(progress < 100){
+                }else if(
+                    progress < 100
+                ){
 
                     progressColor =
                     "#f59e0b";
@@ -205,115 +313,7 @@ async function loadStocks(){
                             "🎉 목표가 도달",
                             {
                                 body:
-                                stock.name +
-                                " 현재가 "
+                                stock.name
+                                + " "
                                 +
-                                stock.price.toLocaleString("ko-KR")
-                                +
-                                "원"
-                            }
-                        );
-
-                    }
-
-                }else{
-
-                    remainText =
-                    "목표까지 "
-                    +
-                    remain.toLocaleString("ko-KR")
-                    +
-                    "원";
-
-                }
-
-            }
-
-            area.innerHTML += `
-            <div class="card"
-                 style="${cardBorder}">
-
-                <div class="stock-name">
-                    ${stock.name}
-                </div>
-
-                <div class="price">
-                    ${stock.price.toLocaleString("ko-KR")}원
-                </div>
-
-                <div style="
-                    color:${progressColor};
-                    margin-top:8px;">
-                    ${progressText}
-                </div>
-
-                <div style="
-                    color:#fbbf24;
-                    margin-top:6px;">
-                    ${remainText}
-                </div>
-
-                <div style="
-                    margin-top:12px;">
-
-                    <input
-                        id="target_${stock.symbol}"
-                        type="number"
-                        value="${getTarget(stock.symbol)}"
-                        placeholder="목표가 입력">
-
-                    <button
-                        onclick="
-                        saveTarget(
-                        '${stock.symbol}',
-                        document.getElementById(
-                        'target_${stock.symbol}'
-                        ).value
-                        );
-                        ">
-                        저장
-                    </button>
-
-                </div>
-
-            </div>
-            `;
-        });
-
-        document.getElementById(
-            "updateTime"
-        ).innerText =
-        "마지막 갱신 : "
-        +
-        new Date()
-        .toLocaleTimeString();
-
-    }catch(err){
-
-        console.error(err);
-
-        area.innerHTML =
-        "<h2>데이터 조회 실패</h2>";
-
-    }
-
-}
-
-if(
-    "Notification" in window &&
-    Notification.permission !== "granted"
-){
-    Notification.requestPermission();
-}
-
-loadStocks();
-
-setInterval(
-    loadStocks,
-    600000
-);
-
-</script>
-
-</body>
-</html>
+                           
