@@ -77,28 +77,52 @@ button{
 
 <script>
 
-function saveTarget(symbol,value){
+async function saveTarget(symbol,value){
 
-    const target = Number(value);
+    const target =
+      Number(value);
 
-    if(!target || target <= 0){
+    if(
+      !target ||
+      target <= 0
+    ){
 
-        alert("목표가는 0보다 큰 숫자를 입력하세요.");
-        return;
+      alert(
+        "목표가는 0보다 큰 숫자를 입력하세요."
+      );
+
+      return;
 
     }
 
     localStorage.setItem(
-        "target_" + symbol,
-        target
+      "target_" + symbol,
+      target
+    );
+
+    await fetch(
+      "https://stock-api.royental9.workers.dev",
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":
+            "application/json"
+        },
+        body:JSON.stringify({
+          symbol:symbol,
+          target:target
+        })
+      }
+    );
+
+    alert(
+      "목표가 저장 완료"
     );
 
     loadStocks();
-
-}
-
+    
 function getTarget(symbol){
-
+}
     return localStorage.getItem(
         "target_" + symbol
     ) || "";
