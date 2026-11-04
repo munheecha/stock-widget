@@ -9,60 +9,57 @@
 <link rel="icon" href="data:,">
 
 <style>
-
-body{
-    background:#111827;
-    color:white;
-    font-family:sans-serif;
-    margin:0;
-    padding:20px;
+body {
+    background: #111827;
+    color: white;
+    font-family: sans-serif;
+    margin: 0;
+    padding: 20px;
 }
 
-h1{
-    margin-bottom:5px;
+h1 {
+    margin-bottom: 5px;
 }
 
-.time{
-    color:#9ca3af;
-    margin-bottom:20px;
+.time {
+    color: #9ca3af;
+    margin-bottom: 20px;
 }
 
-.card{
-    background:#1f2937;
-    padding:18px;
-    border-radius:12px;
-    margin-bottom:12px;
+.card {
+    background: #1f2937;
+    padding: 18px;
+    border-radius: 12px;
+    margin-bottom: 12px;
 }
 
-.stock-name{
-    font-size:18px;
-    font-weight:bold;
+.stock-name {
+    font-size: 18px;
+    font-weight: bold;
 }
 
-.price{
-    color:#22c55e;
-    font-size:28px;
-    font-weight:bold;
-    margin-top:10px;
+.price {
+    color: #22c55e;
+    font-size: 28px;
+    font-weight: bold;
+    margin-top: 10px;
 }
 
-input{
-    width:180px;
-    padding:8px;
-    border:none;
-    border-radius:8px;
+input {
+    width: 180px;
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
 }
 
-button{
-    padding:8px 12px;
-    border:none;
-    border-radius:8px;
-    margin-left:5px;
-    cursor:pointer;
+button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    margin-left: 5px;
+    cursor: pointer;
 }
-
 </style>
-
 </head>
 
 <body>
@@ -76,123 +73,73 @@ button{
 <div id="stocks"></div>
 
 <script>
+// getTarget 함수를 올바른 위치(전역)로 분리했습니다.
+function getTarget(symbol) {
+    return localStorage.getItem("target_" + symbol) || "";
+}
 
-async function saveTarget(symbol,value){
+async function saveTarget(symbol, value) {
+    const target = Number(value);
 
-    const target =
-      Number(value);
-
-    if(
-      !target ||
-      target <= 0
-    ){
-
-      alert(
-        "목표가는 0보다 큰 숫자를 입력하세요."
-      );
-
-      return;
-
+    if (!target || target <= 0) {
+        alert("목표가는 0보다 큰 숫자를 입력하세요.");
+        return;
     }
 
-    localStorage.setItem(
-      "target_" + symbol,
-      target
-    );
+    localStorage.setItem("target_" + symbol, target);
 
-    await fetch(
-      "https://stock-api.royental9.workers.dev",
-      {
-        method:"POST",
-        headers:{
-          "Content-Type":
-            "application/json"
-        },
-        body:JSON.stringify({
-          symbol:symbol,
-          target:target
-        })
-      }
-    );
+    try {
+        await fetch("https://stock-api.royental9.workers.dev", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                symbol: symbol,
+                target: target
+            })
+        });
 
-    alert(
-      "목표가 저장 완료"
-    );
-
-    loadStocks();
-    
-function getTarget(symbol){
-}
-    return localStorage.getItem(
-        "target_" + symbol
-    ) || "";
-
+        alert("목표가 저장 완료");
+        loadStocks();
+    } catch (err) {
+        console.error(err);
+        alert("목표가 서버 전송 실패");
+    }
 }
 
-async function loadStocks(){
-
-    const area =
-    document.getElementById("stocks");
-
+async function loadStocks() {
+    const area = document.getElementById("stocks");
     area.innerHTML = "";
 
-    try{
-
-        const res =
-        await fetch(
-            "https://stock-api.royental9.workers.dev?t="
-            + Date.now()
+    try {
+        const res = await fetch(
+            "https://stock-api.royental9.workers.dev?t=" + Date.now()
         );
 
-        const stocks =
-        await res.json();
+        const stocks = await res.json();
 
         stocks.forEach(stock => {
-
-            const target =
-            Number(
-                getTarget(stock.symbol)
-            );
+            const target = Number(getTarget(stock.symbol));
 
             let progressText = "";
             let remainText = "";
 
-            if(target > 0){
+            if (target > 0) {
+                const remain = target - stock.price;
+                const progress = (stock.price / target * 100).toFixed(1);
 
-                const remain =
-                target - stock.price;
+                progressText = "달성률 : " + progress + "%";
 
-                const progress =
-                (
-                    stock.price /
-                    target * 100
-                ).toFixed(1);
-
-                progressText =
-                "달성률 : "
-                + progress + "%";
-
-                if(remain <= 0){
-
-                    remainText =
-                    "🎉 목표 달성";
-
-                }else{
-
-                    remainText =
-                    "목표까지 "
-                    +
-                    remain.toLocaleString("ko-KR")
-                    +
-                    "원";
-
+                if (remain <= 0) {
+                    remainText = "🎉 목표 달성";
+                } else {
+                    remainText = "목표까지 " + remain.toLocaleString("ko-KR") + "원";
                 }
-
             }
 
             area.innerHTML += `
             <div class="card">
-
                 <div class="stock-name">
                     ${stock.name}
                 </div>
@@ -210,7 +157,6 @@ async function loadStocks(){
                 </div>
 
                 <div style="margin-top:12px;">
-
                     <input
                         id="target_${stock.symbol}"
                         type="number"
@@ -218,50 +164,28 @@ async function loadStocks(){
                         placeholder="목표가 입력">
 
                     <button
-                        onclick="
-                        saveTarget(
-                        '${stock.symbol}',
-                        document.getElementById(
-                        'target_${stock.symbol}'
-                        ).value
-                        );
-                        ">
+                        onclick="saveTarget('${stock.symbol}', document.getElementById('target_${stock.symbol}').value)">
                         저장
                     </button>
-
                 </div>
-
             </div>
             `;
-
         });
 
-        document.getElementById(
-            "updateTime"
-        ).innerText =
-        "마지막 갱신 : "
-        +
-        new Date()
-        .toLocaleTimeString();
+        document.getElementById("updateTime").innerText =
+            "마지막 갱신 : " + new Date().toLocaleTimeString();
 
-    }catch(err){
-
+    } catch (err) {
         console.error(err);
-
-        area.innerHTML =
-        "<h2>데이터 조회 실패</h2>";
-
+        area.innerHTML = "<h2>데이터 조회 실패</h2>";
     }
-
 }
 
+// 최초 실행
 loadStocks();
 
-setInterval(
-    loadStocks,
-    600000
-);
-
+// 1분 주기 갱신
+setInterval(loadStocks, 60000); // 600000ms는 10분이므로 1분(60000ms)으로 조정하실 수도 있습니다. (원래 10분이셨다면 600000 유지)
 </script>
 
 </body>
